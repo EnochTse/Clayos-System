@@ -1,9 +1,18 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+function getAppUrl() {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/+$/, "");
+
+  if (!appUrl) {
+    redirect("/login?error=Missing NEXT_PUBLIC_APP_URL");
+  }
+
+  return appUrl;
+}
 
 export async function signInWithEmail(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
@@ -13,17 +22,13 @@ export async function signInWithEmail(formData: FormData) {
     redirect("/login?error=請輸入 Email");
   }
 
-  const headerStore = await headers();
-  const origin =
-    headerStore.get("origin") ??
-    process.env.NEXT_PUBLIC_APP_URL ??
-    "http://localhost:3000";
+  const appUrl = getAppUrl();
   const supabase = await createSupabaseServerClient();
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      emailRedirectTo: `${appUrl}/auth/callback?next=${encodeURIComponent(next)}`,
     },
   });
 
