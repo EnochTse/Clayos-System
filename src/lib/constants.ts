@@ -8,6 +8,7 @@ import {
   Download,
   Home,
   Package,
+  Plus,
   ReceiptText,
   Settings,
   Users,
@@ -43,6 +44,39 @@ export const dashboardCards = [
   { label: "本月收入", value: "HK$0", helper: "只計入已付款收入" },
   { label: "本月支出", value: "HK$0", helper: "材料、租金、薪金等支出" },
   { label: "本月淨額", value: "HK$0", helper: "收入扣除支出後顯示" },
+] as const;
+
+export const quickActionItems = [
+  {
+    label: "新增學生",
+    description: "建立學生資料、聯絡方法與來源渠道",
+    href: "/students/new",
+    icon: Users,
+  },
+  {
+    label: "新增預約",
+    description: "輸入日期、時間、課程與預約狀態",
+    href: "/bookings/new",
+    icon: CalendarDays,
+  },
+  {
+    label: "記錄付款",
+    description: "記錄付款金額、方式、狀態與參考編號",
+    href: "/payments/new",
+    icon: CircleDollarSign,
+  },
+  {
+    label: "記錄支出",
+    description: "輸入材料、租金、工具等營運支出",
+    href: "/expenses/new",
+    icon: ReceiptText,
+  },
+  {
+    label: "上傳截圖",
+    description: "建立 AI 匯入草稿，確認前不寫入正式資料",
+    href: "/ai-imports/new",
+    icon: Plus,
+  },
 ] as const;
 
 export const courseCategories = [
