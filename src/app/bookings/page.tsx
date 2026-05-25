@@ -25,6 +25,17 @@ type BookingListItem = {
   } | null;
 };
 
+type Relation<T> = T | T[] | null;
+
+type BookingRow = Omit<BookingListItem, "students" | "courses"> & {
+  students: Relation<{ display_name: string }>;
+  courses: Relation<{ name_zh: string }>;
+};
+
+function firstRelation<T>(relation: Relation<T>) {
+  return Array.isArray(relation) ? (relation[0] ?? null) : relation;
+}
+
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat("zh-HK", {
     dateStyle: "medium",
@@ -53,7 +64,13 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
     )
     .order("start_at", { ascending: false });
 
-  const bookings = (data ?? []) as BookingListItem[];
+  const bookings: BookingListItem[] = ((data ?? []) as BookingRow[]).map(
+    (booking) => ({
+      ...booking,
+      students: firstRelation(booking.students),
+      courses: firstRelation(booking.courses),
+    }),
+  );
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl px-4 py-8 text-[#241711] sm:px-6">
