@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { AuthStatus } from "@/components/auth/auth-status";
 import { Button } from "@/components/ui/button";
 import {
   dashboardCards,
@@ -15,9 +16,12 @@ export default function Home() {
     <main className="min-h-screen bg-[#fbf7ef] pb-24 text-[#241711]">
       <section className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
         <div className="rounded-[2rem] bg-[#4a2f24] p-6 text-white shadow-xl shadow-stone-300/40 sm:p-8">
-          <p className="text-sm font-medium tracking-[0.3em] text-[#f5d49a]">
-            {studioBrand.name.toUpperCase()}
-          </p>
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+            <p className="text-sm font-medium tracking-[0.3em] text-[#f5d49a]">
+              {studioBrand.name.toUpperCase()}
+            </p>
+            <AuthStatus />
+          </div>
           <div className="mt-6 max-w-3xl space-y-4">
             <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
               Clayos Studio Manager
