@@ -10,31 +10,15 @@ type BookingsPageProps = {
   }>;
 };
 
-type BookingListItem = {
+type StudentLookup = {
   id: string;
-  start_at: string;
-  end_at: string;
-  status: string;
-  credits_to_deduct: number;
-  notes: string | null;
-  students: {
-    display_name: string;
-  } | null;
-  courses: {
-    name_zh: string;
-  } | null;
+  display_name: string;
 };
 
-type Relation<T> = T | T[] | null;
-
-type BookingRow = Omit<BookingListItem, "students" | "courses"> & {
-  students: Relation<{ display_name: string }>;
-  courses: Relation<{ name_zh: string }>;
+type CourseLookup = {
+  id: string;
+  name_zh: string;
 };
-
-function firstRelation<T>(relation: Relation<T>) {
-  return Array.isArray(relation) ? (relation[0] ?? null) : relation;
-}
 
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat("zh-HK", {
@@ -57,19 +41,34 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
 
   await supabase.rpc("ensure_current_user_profile");
 
-  const { data, error } = await supabase
+  const { data: bookings, error: bookingsError } = await supabase
     .from("bookings")
     .select(
-      "id, start_at, end_at, status, credits_to_deduct, notes, students(display_name), courses(name_zh)",
+      "id, student_id, course_id, start_at, end_at, status, credits_to_deduct, notes",
     )
     .order("start_at", { ascending: false });
 
-  const bookings: BookingListItem[] = ((data ?? []) as BookingRow[]).map(
-    (booking) => ({
-      ...booking,
-      students: firstRelation(booking.students),
-      courses: firstRelation(booking.courses),
-    }),
+  const studentIds = Array.from(
+    new Set((bookings ?? []).map((booking) => booking.student_id).filter(Boolean)),
+  );
+  const courseIds = Array.from(
+    new Set((bookings ?? []).map((booking) => booking.course_id).filter(Boolean)),
+  );
+
+  const [{ data: students }, { data: courses }] = await Promise.all([
+    studentIds.length > 0
+      ? supabase.from("students").select("id, display_name").in("id", studentIds)
+      : Promise.resolve({ data: [] as StudentLookup[] }),
+    courseIds.length > 0
+      ? supabase.from("courses").select("id, name_zh").in("id", courseIds)
+      : Promise.resolve({ data: [] as CourseLookup[] }),
+  ]);
+
+  const studentNameById = new Map(
+    (students ?? []).map((student) => [student.id, student.display_name]),
+  );
+  const courseNameById = new Map(
+    (courses ?? []).map((course) => [course.id, course.name_zh]),
   );
 
   return (
@@ -95,24 +94,26 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
         </div>
       ) : null}
 
-      {error ? (
+      {bookingsError ? (
         <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-          無法讀取預約資料：{error.message}
+          無法讀取預約資料：{bookingsError.message}
         </div>
       ) : null}
 
       <section className="mt-6 overflow-hidden rounded-[2rem] bg-white shadow-sm">
-        {bookings.length > 0 ? (
+        {bookings && bookings.length > 0 ? (
           <div className="divide-y divide-stone-100">
             {bookings.map((booking) => (
               <article className="p-5" key={booking.id}>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <h2 className="text-lg font-semibold">
-                      {booking.students?.display_name ?? "未命名學生"}
+                      {studentNameById.get(booking.student_id) ?? "未命名學生"}
                     </h2>
                     <p className="mt-1 text-sm text-stone-500">
-                      {booking.courses?.name_zh ?? "其他 / TBC"}
+                      {booking.course_id
+                        ? (courseNameById.get(booking.course_id) ?? "其他 / TBC")
+                        : "其他 / TBC"}
                     </p>
                     <p className="mt-2 text-sm text-stone-600">
                       {formatDateTime(booking.start_at)} - {formatDateTime(booking.end_at)}
