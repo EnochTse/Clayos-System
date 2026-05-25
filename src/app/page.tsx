@@ -1,65 +1,97 @@
-import Image from "next/image";
+import {
+  dashboardCards,
+  implementationPhases,
+  navigationItems,
+  seedCourse,
+  studioBrand,
+} from "@/lib/constants";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen bg-[#fbf7ef] pb-24 text-[#241711]">
+      <section className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-6 sm:px-6 lg:px-8">
+        <div className="rounded-[2rem] bg-[#4a2f24] p-6 text-white shadow-xl shadow-stone-300/40 sm:p-8">
+          <p className="text-sm font-medium tracking-[0.3em] text-[#f5d49a]">
+            {studioBrand.name.toUpperCase()}
           </p>
+          <div className="mt-6 max-w-3xl space-y-4">
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-5xl">
+              Clayos Studio Manager
+            </h1>
+            <p className="text-lg leading-8 text-stone-100">
+              {studioBrand.tagline}
+            </p>
+            <p className="text-sm leading-7 text-stone-200">
+              行動優先的內部 PWA，用來管理學生、預約、套票堂數、付款支出、AI
+              截圖匯入、Google Calendar 同步與 Excel / Google Sheets 匯出。
+            </p>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {dashboardCards.map((card) => (
+            <article
+              className="rounded-3xl border border-stone-200 bg-white p-5 shadow-sm"
+              key={card.label}
+            >
+              <p className="text-sm text-stone-500">{card.label}</p>
+              <p className="mt-3 text-3xl font-semibold">{card.value}</p>
+              <p className="mt-2 text-sm leading-6 text-stone-500">
+                {card.helper}
+              </p>
+            </article>
+          ))}
         </div>
-      </main>
-    </div>
+
+        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <section className="rounded-3xl bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-semibold">MVP 開發計劃</h2>
+            <div className="mt-5 space-y-4">
+              {implementationPhases.map((phase, index) => (
+                <div className="flex gap-4" key={phase}>
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#4a2f24] text-sm font-semibold text-white">
+                    {index + 1}
+                  </span>
+                  <p className="pt-1 text-sm leading-7 text-stone-600">
+                    {phase}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-3xl bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-semibold">已驗證種子課程</h2>
+            <div className="mt-5 rounded-2xl border border-stone-200 bg-stone-50 p-4">
+              <p className="font-medium">{seedCourse.name_zh}</p>
+              <p className="mt-1 text-sm text-stone-500">
+                {seedCourse.name_en}
+              </p>
+              <p className="mt-4 text-sm leading-7 text-stone-600">
+                {seedCourse.description_zh}
+              </p>
+              <p className="mt-4 text-xs leading-6 text-stone-500">
+                價格與課堂長度暫以 TBC / nullable 保存，避免寫入未驗證資料。
+              </p>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <nav className="fixed inset-x-0 bottom-0 border-t border-stone-200 bg-white/95 px-3 py-2 backdrop-blur lg:hidden">
+        <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+          {navigationItems.slice(0, 5).map((item) => (
+            <a
+              className="flex flex-col items-center gap-1 rounded-2xl px-2 py-2 text-xs text-stone-500"
+              href={item.href}
+              key={item.href}
+            >
+              <item.icon className="size-5" />
+              <span>{item.label}</span>
+            </a>
+          ))}
+        </div>
+      </nav>
+    </main>
   );
 }
