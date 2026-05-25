@@ -4,41 +4,37 @@ import { redirect } from "next/navigation";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-function getAppUrl() {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/+$/, "");
-
-  if (!appUrl) {
-    redirect("/login?error=Missing NEXT_PUBLIC_APP_URL");
-  }
-
-  return appUrl;
-}
-
-export async function signInWithEmail(formData: FormData) {
+export async function signInWithPassword(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "/").trim() || "/";
 
   if (!email) {
     redirect("/login?error=請輸入 Email");
   }
 
-  const appUrl = getAppUrl();
+  if (!password) {
+    redirect("/login?error=請輸入密碼");
+  }
+
   const supabase = await createSupabaseServerClient();
 
-  const { error } = await supabase.auth.signInWithOtp({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
-    options: {
-      emailRedirectTo: `${appUrl}/auth/callback?next=${encodeURIComponent(next)}`,
-    },
+    password,
   });
 
   if (error) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
   }
 
-  redirect(
-    `/login?message=${encodeURIComponent("已寄出登入連結，請檢查你的 Email。")}`,
-  );
+  const { error: profileError } = await supabase.rpc("ensure_current_user_profile");
+
+  if (profileError) {
+    redirect(`/login?error=${encodeURIComponent(profileError.message)}`);
+  }
+
+  redirect(next);
 }
 
 export async function signOut() {

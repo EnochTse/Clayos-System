@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 
-import { signInWithEmail } from "./actions";
+import { signInWithPassword } from "./actions";
 
 type LoginPageProps = {
   searchParams?: Promise<{
@@ -22,7 +22,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </p>
         <h1 className="mt-3 text-3xl font-semibold">登入管理系統</h1>
         <p className="mt-3 text-sm leading-7 text-stone-500">
-          輸入 Email 後，Supabase 會寄出 magic link。登入成功後會自動建立你的 profile 與角色。
+          使用 Supabase email + password 登入。登入成功後會自動建立或補齊你的 profile 與角色。
         </p>
 
         {params?.error ? (
@@ -37,7 +37,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
         ) : null}
 
-        <form action={signInWithEmail} className="mt-8 grid gap-5">
+        <form action={signInWithPassword} className="mt-8 grid gap-5">
           <input name="next" type="hidden" value={next} />
           <label className="grid gap-2">
             <span className="text-sm font-medium text-stone-700">Email</span>
@@ -51,8 +51,20 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             />
           </label>
 
+          <label className="grid gap-2">
+            <span className="text-sm font-medium text-stone-700">密碼</span>
+            <input
+              autoComplete="current-password"
+              className="min-h-11 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none transition focus:border-[#4a2f24] focus:bg-white focus:ring-4 focus:ring-[#4a2f24]/10"
+              name="password"
+              placeholder="輸入密碼"
+              required
+              type="password"
+            />
+          </label>
+
           <Button className="h-11 rounded-full px-6" type="submit">
-            寄出登入連結
+            登入
           </Button>
         </form>
       </section>
