@@ -10,40 +10,44 @@ type LoginPageProps = {
   }>;
 };
 
+const fieldClassName = "studio-field";
+
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const next = params?.next ?? "/";
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#fbf7ef] px-4 py-10 text-[#241711]">
-      <section className="w-full max-w-md rounded-[2rem] bg-white p-6 shadow-sm sm:p-8">
-        <p className="text-sm font-medium tracking-[0.25em] text-stone-400">
+    <main className="flex min-h-screen items-center justify-center bg-[var(--surface-canvas-white)] px-4 py-10 text-[var(--color-ink)]">
+      <section className="studio-card w-full max-w-md p-6 sm:p-8">
+        <p className="studio-kicker">
           CLAYOS STUDIO
         </p>
-        <h1 className="mt-3 text-3xl font-semibold">登入管理系統</h1>
-        <p className="mt-3 text-sm leading-7 text-stone-500">
+        <h1 className="mt-3 text-[30px] font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
+          登入管理系統
+        </h1>
+        <p className="mt-3 text-sm leading-7 text-[var(--color-muted-gray)]">
           使用 Supabase email + password 登入。登入成功後會自動建立或補齊你的 profile 與角色。
         </p>
 
         {params?.error ? (
-          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <div className="studio-alert studio-alert-error mt-5">
             {params.error}
           </div>
         ) : null}
 
         {params?.message ? (
-          <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+          <div className="studio-alert studio-alert-success mt-5">
             {params.message}
           </div>
         ) : null}
 
-        <form action={signInWithPassword} className="mt-8 grid gap-5">
+        <form action={signInWithPassword} className="mt-6 grid gap-5">
           <input name="next" type="hidden" value={next} />
           <label className="grid gap-2">
-            <span className="text-sm font-medium text-stone-700">Email</span>
+            <span className="text-sm font-medium text-[var(--color-cool-gray)]">Email</span>
             <input
               autoComplete="email"
-              className="min-h-11 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none transition focus:border-[#4a2f24] focus:bg-white focus:ring-4 focus:ring-[#4a2f24]/10"
+              className={fieldClassName}
               name="email"
               placeholder="you@example.com"
               required
@@ -52,10 +56,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </label>
 
           <label className="grid gap-2">
-            <span className="text-sm font-medium text-stone-700">密碼</span>
+            <span className="text-sm font-medium text-[var(--color-cool-gray)]">密碼</span>
             <input
               autoComplete="current-password"
-              className="min-h-11 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none transition focus:border-[#4a2f24] focus:bg-white focus:ring-4 focus:ring-[#4a2f24]/10"
+              className={fieldClassName}
               name="password"
               placeholder="輸入密碼"
               required
@@ -63,7 +67,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             />
           </label>
 
-          <Button className="h-11 rounded-full px-6" type="submit">
+          <Button className="h-9 rounded-[10px] px-4 text-[13px]" type="submit">
             登入
           </Button>
         </form>

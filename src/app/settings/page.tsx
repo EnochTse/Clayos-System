@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { Button } from "@/components/ui/button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function SettingsPage() {
@@ -16,23 +17,24 @@ export default async function SettingsPage() {
   await supabase.rpc("ensure_current_user_profile");
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-4xl px-4 py-8 text-[#241711] sm:px-6">
-      <Link className="text-sm font-medium text-stone-500 hover:text-stone-900" href="/">
-        ← 返回總覽
-      </Link>
-      <h1 className="mt-4 text-3xl font-semibold">設定</h1>
-      <section className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold">整合</h2>
-        <p className="mt-2 text-sm text-stone-500">
+    <div className="space-y-5">
+      <div>
+        <p className="studio-kicker">Workspace</p>
+        <h1 className="mt-2 text-[28px] font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
+          Settings
+        </h1>
+      </div>
+      <section className="studio-card p-5 sm:p-6">
+        <h2 className="text-lg font-semibold text-[var(--color-ink)]">Integrations</h2>
+        <p className="mt-2 text-sm text-[var(--color-muted-gray)]">
           連接外部服務，讓預約可同步到 Google Calendar。
         </p>
-        <Link
-          className="mt-4 inline-flex rounded-full bg-[#4a2f24] px-5 py-2.5 text-sm font-medium text-white"
-          href="/settings/integrations/google-calendar"
-        >
-          Google Calendar 連線設定
-        </Link>
+        <Button asChild className="mt-4 h-9 rounded-[10px] px-4 text-[13px]">
+          <Link href="/settings/integrations/google-calendar">
+            Google Calendar 連線設定
+          </Link>
+        </Button>
       </section>
-    </main>
+    </div>
   );
 }

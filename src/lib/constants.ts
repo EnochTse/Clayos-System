@@ -1,13 +1,8 @@
 import {
-  BarChart3,
-  BookOpen,
   Bot,
   CalendarDays,
   CircleDollarSign,
-  ClipboardCheck,
-  Download,
   Home,
-  Package,
   Plus,
   ReceiptText,
   Settings,
@@ -15,67 +10,94 @@ import {
 } from "lucide-react";
 
 export const studioBrand = {
-  name: "Clayos Studio",
-  tagline: "在混亂與秩序之間 找到屬於自己的節奏",
-  idea: "在 Clayos，我們相信每一種混亂，都有自己的秩序。",
+  name: "Clayos Studio Manager",
+  tagline: "Operational Workspace",
+  idea: "讓學生、預約、付款、支出與 AI 匯入流程集中在同一個營運工作台。",
 };
 
 export const navigationItems = [
-  { label: "總覽", href: "/dashboard", icon: Home },
-  { label: "今日課堂", href: "/attendance", icon: ClipboardCheck },
-  { label: "預約", href: "/bookings", icon: CalendarDays },
-  { label: "學生", href: "/students", icon: Users },
-  { label: "課程", href: "/courses", icon: BookOpen },
-  { label: "套票", href: "/packages", icon: Package },
-  { label: "AI 匯入", href: "/ai-imports", icon: Bot },
-  { label: "收入", href: "/payments", icon: CircleDollarSign },
-  { label: "支出", href: "/expenses", icon: ReceiptText },
-  { label: "報表", href: "/reports", icon: BarChart3 },
-  { label: "匯出", href: "/exports", icon: Download },
-  { label: "設定", href: "/settings", icon: Settings },
+  { label: "Dashboard", href: "/dashboard", icon: Home },
+  { label: "Students", href: "/students", icon: Users },
+  { label: "Bookings", href: "/bookings", icon: CalendarDays },
+  { label: "Payments", href: "/payments", icon: CircleDollarSign },
+  { label: "Expenses", href: "/expenses", icon: ReceiptText },
+  { label: "AI Imports", href: "/ai-imports", icon: Bot },
 ] as const;
 
-export const dashboardCards = [
-  { label: "今日課堂", value: "0", helper: "等待連接 Supabase 預約資料" },
-  { label: "本週預約", value: "0", helper: "即將建立預約 CRUD" },
-  { label: "待確認 AI 匯入", value: "0", helper: "AI 只會產生可審核草稿" },
-  { label: "未付款", value: "HK$0", helper: "付款狀態會與出席分開追蹤" },
-  { label: "即將到期套票", value: "0", helper: "依套票到期日與剩餘堂數計算" },
-  { label: "本月收入", value: "HK$0", helper: "只計入已付款收入" },
-  { label: "本月支出", value: "HK$0", helper: "材料、租金、薪金等支出" },
-  { label: "本月淨額", value: "HK$0", helper: "收入扣除支出後顯示" },
+export const workspaceUtilityItems = [
+  { label: "Google Calendar", href: "/settings/integrations/google-calendar", icon: CalendarDays },
+  { label: "Settings", href: "/settings", icon: Settings },
 ] as const;
 
 export const quickActionItems = [
   {
     label: "新增學生",
-    description: "建立學生資料、聯絡方法與來源渠道",
+    description: "建立學生資料",
     href: "/students/new",
     icon: Users,
   },
   {
     label: "新增預約",
-    description: "輸入日期、時間、課程與預約狀態",
+    description: "建立課堂預約",
     href: "/bookings/new",
     icon: CalendarDays,
   },
   {
     label: "記錄付款",
-    description: "記錄付款金額、方式、狀態與參考編號",
+    description: "新增收入紀錄",
     href: "/payments/new",
     icon: CircleDollarSign,
   },
   {
     label: "記錄支出",
-    description: "輸入材料、租金、工具等營運支出",
+    description: "新增成本紀錄",
     href: "/expenses/new",
     icon: ReceiptText,
   },
   {
     label: "上傳截圖",
-    description: "建立 AI 匯入草稿，確認前不寫入正式資料",
+    description: "建立 AI 草稿",
     href: "/ai-imports/new",
     icon: Plus,
+  },
+] as const;
+
+export const dashboardCards = [
+  { label: "今日預約", value: "bookingsToday", helper: "今日排程" },
+  { label: "進行中預約", value: "bookingsInProgress", helper: "待跟進預約" },
+  { label: "活躍學生", value: "activeStudents", helper: "目前可預約學生" },
+  { label: "待確認付款", value: "pendingPayments", helper: "需要確認收款" },
+  { label: "本月支出", value: "monthExpenses", helper: "營運成本追蹤" },
+  { label: "待審核 AI", value: "pendingAiImports", helper: "需人工確認資料" },
+] as const;
+
+export const dashboardBoardColumns = [
+  {
+    key: "open",
+    title: "Open",
+    subtitle: "待處理",
+    actions: [
+      { label: "新增學生資料", href: "/students/new", tag: "Student", hint: "建立新聯絡人" },
+      { label: "建立新預約", href: "/bookings/new", tag: "Booking", hint: "排入課堂時段" },
+    ],
+  },
+  {
+    key: "inProgress",
+    title: "In Progress",
+    subtitle: "進行中",
+    actions: [
+      { label: "追蹤待付款", href: "/payments", tag: "Payment", hint: "查看 pending / unpaid" },
+      { label: "記錄本日支出", href: "/expenses/new", tag: "Expense", hint: "補齊營運成本" },
+    ],
+  },
+  {
+    key: "resolved",
+    title: "Resolved",
+    subtitle: "已處理",
+    actions: [
+      { label: "審核 AI 匯入草稿", href: "/ai-imports", tag: "AI Import", hint: "確認資料可用性" },
+      { label: "檢查日曆同步", href: "/settings/integrations/google-calendar", tag: "Calendar", hint: "確認連線狀態" },
+    ],
   },
 ] as const;
 
@@ -143,9 +165,9 @@ export const seedCourse = {
 } as const;
 
 export const implementationPhases = [
-  "專案基礎：Next.js、Tailwind、Supabase client、資料庫 schema、RLS、seed data",
-  "核心營運：學生、課程、套票、預約 CRUD 與行動版導覽",
-  "堂數與財務：出席扣堂、付款、支出、審計紀錄與報表",
-  "匯出整合：Excel workbook、Google Sheets 匯出、Google Calendar 同步",
-  "AI 與 PWA：截圖草稿匯入、人手確認流程、manifest、離線/安裝支援與 QA",
+  "全站導覽改為 Dashboard App Shell（固定側欄 + 操作區 + 工作畫布）",
+  "學生、預約、付款、支出、AI 匯入統一為可搜尋可編輯的營運頁面",
+  "Google Calendar 同步與角色權限（owner 控制整合設定）",
+  "營運資料輸出（Excel / Google Sheets）與財務視圖",
+  "AI 匯入自動化 + 行動版 PWA 優化與最終 QA",
 ] as const;

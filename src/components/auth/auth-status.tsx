@@ -13,10 +13,7 @@ export async function AuthStatus() {
 
   if (!user) {
     return (
-      <Button
-        asChild
-        className="h-11 rounded-full bg-[#f5d49a] px-6 text-[#241711] hover:bg-[#f1c574]"
-      >
+      <Button asChild className="h-9 rounded-[10px] px-4 text-[13px]">
         <Link href="/login">登入</Link>
       </Button>
     );
@@ -29,17 +26,15 @@ export async function AuthStatus() {
     .maybeSingle();
 
   return (
-    <div className="flex flex-col gap-3 rounded-3xl bg-white/10 p-4 text-sm text-stone-100 sm:flex-row sm:items-center">
+    <div className="studio-card-muted flex flex-col gap-3 p-4 text-sm text-[var(--color-ink)] sm:flex-row sm:items-center">
       <div>
         <p className="font-medium">{profile?.full_name ?? user.email}</p>
-        <p className="text-xs text-stone-300">角色：{profile?.role ?? "未設定"}</p>
+        <p className="text-xs text-[var(--color-muted-gray)]">
+          角色：{profile?.role ?? "未設定"}
+        </p>
       </div>
       <form action={signOut}>
-        <Button
-          className="h-9 rounded-full border-white/30 px-4 text-white hover:bg-white/10"
-          type="submit"
-          variant="outline"
-        >
+        <Button className="h-8 rounded-[10px] px-3 text-[12px]" type="submit" variant="outline">
           登出
         </Button>
       </form>

@@ -29,48 +29,52 @@ export default async function AiImportsPage({ searchParams }: AiImportsPageProps
     .order("created_at", { ascending: false });
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-5xl px-4 py-8 text-[#241711] sm:px-6">
+    <div className="space-y-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <Link className="text-sm font-medium text-stone-500 hover:text-stone-900" href="/">
-            ← 返回總覽
-          </Link>
-          <h1 className="mt-4 text-3xl font-semibold">AI 匯入</h1>
-          <p className="mt-2 text-sm text-stone-500">已連接 Supabase ai_imports table。</p>
+          <p className="studio-kicker">Workspace</p>
+          <h1 className="mt-2 text-[28px] font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
+            AI Imports
+          </h1>
+          <p className="mt-2 text-sm text-[var(--color-muted-gray)]">
+            查看 AI 匯入草稿，逐筆人工檢查與跟進。
+          </p>
         </div>
-        <Button asChild className="h-11 rounded-full px-6">
+        <Button asChild className="h-9 rounded-[10px] px-4 text-[13px]">
           <Link href="/ai-imports/new">新增 AI 匯入</Link>
         </Button>
       </div>
 
       {params?.created ? (
-        <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+        <div className="studio-alert studio-alert-success">
           AI 匯入草稿已成功儲存到 Supabase。
         </div>
       ) : null}
 
       {error ? (
-        <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div className="studio-alert studio-alert-error">
           無法讀取 AI 匯入資料：{error.message}
         </div>
       ) : null}
 
-      <section className="mt-6 overflow-hidden rounded-[2rem] bg-white shadow-sm">
+      <section className="studio-card overflow-hidden">
         {imports && imports.length > 0 ? (
-          <div className="divide-y divide-stone-100">
+          <div className="divide-y divide-[var(--color-fog)]">
             {imports.map((item) => (
-              <article className="p-5" key={item.id}>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <article className="p-4 sm:p-5" key={item.id}>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                   <div>
-                    <h2 className="text-lg font-semibold">{item.source_channel}</h2>
-                    <p className="mt-1 text-sm text-stone-500">
+                    <h2 className="text-base font-semibold text-[var(--color-ink)]">
+                      {item.source_channel}
+                    </h2>
+                    <p className="mt-1 text-sm text-[var(--color-muted-gray)]">
                       {item.raw_text || "未填截圖文字"}
                     </p>
                     {item.warnings && item.warnings.length > 0 ? (
-                      <p className="mt-2 text-sm text-amber-700">{item.warnings[0]}</p>
+                      <p className="mt-2 text-sm text-[#6a572a]">{item.warnings[0]}</p>
                     ) : null}
                   </div>
-                  <span className="w-fit rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">
+                  <span className="studio-badge">
                     {item.status}
                   </span>
                 </div>
@@ -79,11 +83,13 @@ export default async function AiImportsPage({ searchParams }: AiImportsPageProps
           </div>
         ) : (
           <div className="p-8 text-center">
-            <p className="font-medium">暫時未有 AI 匯入草稿</p>
-            <p className="mt-2 text-sm text-stone-500">建立第一個草稿後會在這裡顯示。</p>
+            <p className="font-medium text-[var(--color-ink)]">暫時未有 AI 匯入草稿</p>
+            <p className="mt-2 text-sm text-[var(--color-muted-gray)]">
+              建立第一個草稿後會在這裡顯示。
+            </p>
           </div>
         )}
       </section>
-    </main>
+    </div>
   );
 }

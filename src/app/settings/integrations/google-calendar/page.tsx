@@ -18,6 +18,8 @@ type GoogleCalendarSettingsPageProps = {
   }>;
 };
 
+const fieldClassName = "studio-field";
+
 export default async function GoogleCalendarSettingsPage({
   searchParams,
 }: GoogleCalendarSettingsPageProps) {
@@ -41,17 +43,14 @@ export default async function GoogleCalendarSettingsPage({
 
   if (!profile || profile.role !== "owner") {
     return (
-      <main className="mx-auto min-h-screen w-full max-w-3xl px-4 py-8 text-[#241711] sm:px-6">
-        <Link
-          className="text-sm font-medium text-stone-500 hover:text-stone-900"
-          href="/settings"
-        >
+      <div className="space-y-4">
+        <Link className="studio-link" href="/settings">
           ← 返回設定
         </Link>
-        <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div className="studio-alert studio-alert-error">
           只有 owner 可以管理 Google Calendar 連線。
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -66,76 +65,78 @@ export default async function GoogleCalendarSettingsPage({
     Boolean(integration?.encrypted_access_token);
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-3xl px-4 py-8 text-[#241711] sm:px-6">
-      <Link
-        className="text-sm font-medium text-stone-500 hover:text-stone-900"
-        href="/settings"
-      >
-        ← 返回設定
-      </Link>
-
-      <div className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm sm:p-8">
-        <h1 className="text-3xl font-semibold">Google Calendar</h1>
-        <p className="mt-3 text-sm leading-7 text-stone-500">
+    <div className="space-y-5">
+      <div>
+        <p className="studio-kicker">Integrations</p>
+        <h1 className="mt-2 text-[28px] font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
+          Google Calendar
+        </h1>
+        <p className="mt-2 text-sm leading-7 text-[var(--color-muted-gray)]">
           連線後，`confirmed` 的預約會同步到 Google Calendar，之後編輯預約也會更新事件。
         </p>
+      </div>
+
+      <div className="studio-card p-5 sm:p-6">
+        <Link className="studio-link" href="/settings">
+          ← 返回設定
+        </Link>
 
         {params?.error ? (
-          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <div className="studio-alert studio-alert-error mt-5">
             {params.error}
           </div>
         ) : null}
 
         {params?.connected || params?.saved ? (
-          <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+          <div className="studio-alert studio-alert-success mt-5">
             設定已更新。
           </div>
         ) : null}
 
         {params?.disconnected ? (
-          <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          <div className="studio-alert studio-alert-warning mt-5">
             已中斷 Google Calendar 連線。
           </div>
         ) : null}
 
-        <div className="mt-6 rounded-2xl border border-stone-200 bg-stone-50 p-4 text-sm">
+        <div className="studio-card-muted mt-5 p-4 text-sm text-[var(--color-ink)]">
           狀態：{isConnected ? "已連線" : "未連線"}
           {integration?.token_expiry ? (
-            <span className="block text-stone-500">
+            <span className="mt-1 block text-[var(--color-muted-gray)]">
               token 到期：{new Date(integration.token_expiry).toLocaleString("zh-HK")}
             </span>
           ) : null}
         </div>
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <Button asChild className="h-11 rounded-full px-6">
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+          <Button asChild className="h-9 rounded-[10px] px-4 text-[13px]">
             <a href="/api/google/oauth/start">連接 Google 帳號</a>
           </Button>
           <form action={disconnectGoogleCalendar}>
-            <Button className="h-11 rounded-full px-6" type="submit" variant="outline">
+            <Button className="h-9 rounded-[10px] px-4 text-[13px]" type="submit" variant="outline">
               中斷連線
             </Button>
           </form>
         </div>
 
-        <form action={updateGoogleCalendarSettings} className="mt-8 grid gap-4">
+        <form action={updateGoogleCalendarSettings} className="mt-6 grid gap-4">
           <label className="grid gap-2">
-            <span className="text-sm font-medium text-stone-700">
+            <span className="text-sm font-medium text-[var(--color-cool-gray)]">
               Calendar ID（預設 primary）
             </span>
             <input
-              className="min-h-11 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none transition focus:border-[#4a2f24] focus:bg-white focus:ring-4 focus:ring-[#4a2f24]/10"
+              className={fieldClassName}
               defaultValue={integration?.calendar_id ?? "primary"}
               name="calendar_id"
               placeholder="primary"
               type="text"
             />
           </label>
-          <Button className="h-11 rounded-full px-6" type="submit">
+          <Button className="h-9 rounded-[10px] px-4 text-[13px]" type="submit">
             儲存 Calendar 設定
           </Button>
         </form>
       </div>
-    </main>
+    </div>
   );
 }

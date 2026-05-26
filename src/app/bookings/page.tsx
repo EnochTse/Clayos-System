@@ -73,74 +73,69 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
   );
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-5xl px-4 py-8 text-[#241711] sm:px-6">
+    <div className="space-y-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <Link className="text-sm font-medium text-stone-500 hover:text-stone-900" href="/">
-            ← 返回總覽
-          </Link>
-          <h1 className="mt-4 text-3xl font-semibold">預約</h1>
-          <p className="mt-2 text-sm text-stone-500">
-            已連接 Supabase bookings table。
+          <p className="studio-kicker">Workspace</p>
+          <h1 className="mt-2 text-[28px] font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
+            Bookings
+          </h1>
+          <p className="mt-2 text-sm text-[var(--color-muted-gray)]">
+            管理課堂預約時間、狀態與扣堂資訊。
           </p>
         </div>
-        <Button asChild className="h-11 rounded-full px-6">
+        <Button asChild className="h-9 rounded-[10px] px-4 text-[13px]">
           <Link href="/bookings/new">新增預約</Link>
         </Button>
       </div>
 
       {params?.created ? (
-        <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+        <div className="studio-alert studio-alert-success">
           預約已成功儲存到 Supabase。
         </div>
       ) : null}
       {params?.updated ? (
-        <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+        <div className="studio-alert studio-alert-success">
           預約資料已更新。
         </div>
       ) : null}
 
       {bookingsError ? (
-        <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+        <div className="studio-alert studio-alert-error">
           無法讀取預約資料：{bookingsError.message}
         </div>
       ) : null}
 
-      <section className="mt-6 overflow-hidden rounded-[2rem] bg-white shadow-sm">
+      <section className="studio-card overflow-hidden">
         {bookings && bookings.length > 0 ? (
-          <div className="divide-y divide-stone-100">
+          <div className="divide-y divide-[var(--color-fog)]">
             {bookings.map((booking) => (
-              <article className="p-5" key={booking.id}>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <article className="p-4 sm:p-5" key={booking.id}>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                   <div>
-                    <h2 className="text-lg font-semibold">
+                    <h2 className="text-base font-semibold text-[var(--color-ink)]">
                       {studentNameById.get(booking.student_id) ?? "未命名學生"}
                     </h2>
-                    <p className="mt-1 text-sm text-stone-500">
+                    <p className="mt-1 text-sm text-[var(--color-muted-gray)]">
                       {booking.course_id
                         ? (courseNameById.get(booking.course_id) ?? "其他 / TBC")
                         : "其他 / TBC"}
                     </p>
-                    <p className="mt-2 text-sm text-stone-600">
+                    <p className="mt-2 text-sm text-[var(--color-cool-gray)]">
                       {formatDateTime(booking.start_at)} - {formatDateTime(booking.end_at)}
                     </p>
                     {booking.notes ? (
-                      <p className="mt-2 text-sm text-stone-500">{booking.notes}</p>
+                      <p className="mt-2 text-sm text-[var(--color-muted-gray)]">
+                        {booking.notes}
+                      </p>
                     ) : null}
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="w-fit rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">
-                      {booking.status}
-                    </span>
-                    <span className="w-fit rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-                      扣堂 {booking.credits_to_deduct}
-                    </span>
-                    <Link
-                      className="w-fit rounded-full border border-stone-200 px-3 py-1 text-xs font-medium text-stone-700"
-                      href={`/bookings/${booking.id}/edit`}
-                    >
-                      編輯
-                    </Link>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="studio-badge">{booking.status}</span>
+                    <span className="studio-badge">扣堂 {booking.credits_to_deduct}</span>
+                    <Button asChild className="h-8 rounded-[10px] px-3 text-xs" size="sm" variant="outline">
+                      <Link href={`/bookings/${booking.id}/edit`}>編輯</Link>
+                    </Button>
                   </div>
                 </div>
               </article>
@@ -148,11 +143,13 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
           </div>
         ) : (
           <div className="p-8 text-center">
-            <p className="font-medium">暫時未有預約</p>
-            <p className="mt-2 text-sm text-stone-500">新增第一個預約後會在這裡顯示。</p>
+            <p className="font-medium text-[var(--color-ink)]">暫時未有預約</p>
+            <p className="mt-2 text-sm text-[var(--color-muted-gray)]">
+              新增第一個預約後會在這裡顯示。
+            </p>
           </div>
         )}
       </section>
-    </main>
+    </div>
   );
 }

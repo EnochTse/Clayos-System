@@ -12,7 +12,7 @@ type EditExpensePageProps = {
 };
 
 const fieldClassName =
-  "min-h-11 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none transition focus:border-[#4a2f24] focus:bg-white focus:ring-4 focus:ring-[#4a2f24]/10";
+  "studio-field";
 
 export default async function EditExpensePage({
   params,
@@ -40,20 +40,22 @@ export default async function EditExpensePage({
   }
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-3xl px-4 py-8 text-[#241711] sm:px-6">
-      <Link className="text-sm font-medium text-stone-500 hover:text-stone-900" href="/expenses">
+    <div className="mx-auto w-full max-w-3xl space-y-5">
+      <Link className="studio-link" href="/expenses">
         ← 返回支出列表
       </Link>
-      <div className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm sm:p-8">
-        <h1 className="text-3xl font-semibold">編輯支出</h1>
+      <div className="studio-card p-5 sm:p-6">
+        <h1 className="text-[28px] font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
+          編輯支出
+        </h1>
 
         {query?.error ? (
-          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <div className="studio-alert studio-alert-error mt-5">
             {query.error}
           </div>
         ) : null}
 
-        <form action={updateExpense.bind(null, id)} className="mt-8 grid gap-5">
+        <form action={updateExpense.bind(null, id)} className="mt-6 grid gap-5">
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="grid gap-2">
               <span className="text-sm font-medium text-stone-700">支出日期</span>
@@ -117,10 +119,10 @@ export default async function EditExpensePage({
           </label>
 
           <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-            <Button className="h-11 rounded-full px-6" type="submit">
+            <Button className="h-9 rounded-[10px] px-4 text-[13px]" type="submit">
               儲存變更
             </Button>
-            <Button asChild className="h-11 rounded-full px-6" type="button" variant="outline">
+            <Button asChild className="h-9 rounded-[10px] px-4 text-[13px]" type="button" variant="outline">
               <Link href="/expenses">取消</Link>
             </Button>
           </div>

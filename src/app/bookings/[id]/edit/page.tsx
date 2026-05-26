@@ -12,7 +12,7 @@ type EditBookingPageProps = {
 };
 
 const fieldClassName =
-  "min-h-11 rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm outline-none transition focus:border-[#4a2f24] focus:bg-white focus:ring-4 focus:ring-[#4a2f24]/10";
+  "studio-field";
 
 function toDateInput(value: string) {
   return new Date(value).toISOString().slice(0, 10);
@@ -69,23 +69,25 @@ export default async function EditBookingPage({
   }
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-3xl px-4 py-8 text-[#241711] sm:px-6">
-      <Link className="text-sm font-medium text-stone-500 hover:text-stone-900" href="/bookings">
+    <div className="mx-auto w-full max-w-3xl space-y-5">
+      <Link className="studio-link" href="/bookings">
         ← 返回預約列表
       </Link>
-      <div className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm sm:p-8">
-        <h1 className="text-3xl font-semibold">編輯預約</h1>
-        <p className="mt-2 text-sm text-stone-500">
+      <div className="studio-card p-5 sm:p-6">
+        <h1 className="text-[28px] font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
+          編輯預約
+        </h1>
+        <p className="mt-2 text-sm text-[var(--color-muted-gray)]">
           當狀態是 confirmed 時，系統會同步 Google Calendar 事件。
         </p>
 
         {query?.error ? (
-          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          <div className="studio-alert studio-alert-error mt-5">
             {query.error}
           </div>
         ) : null}
 
-        <form action={updateBooking.bind(null, id)} className="mt-8 grid gap-5">
+        <form action={updateBooking.bind(null, id)} className="mt-6 grid gap-5">
           <label className="grid gap-2">
             <span className="text-sm font-medium text-stone-700">學生</span>
             <select className={fieldClassName} defaultValue={booking.student_id} name="student_id" required>
@@ -150,10 +152,10 @@ export default async function EditBookingPage({
             <textarea className={`${fieldClassName} min-h-28 resize-y`} defaultValue={booking.notes ?? ""} name="notes" />
           </label>
           <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-            <Button className="h-11 rounded-full px-6" type="submit">
+            <Button className="h-9 rounded-[10px] px-4 text-[13px]" type="submit">
               儲存變更
             </Button>
-            <Button asChild className="h-11 rounded-full px-6" type="button" variant="outline">
+            <Button asChild className="h-9 rounded-[10px] px-4 text-[13px]" type="button" variant="outline">
               <Link href="/bookings">取消</Link>
             </Button>
           </div>
