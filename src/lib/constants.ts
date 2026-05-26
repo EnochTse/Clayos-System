@@ -79,6 +79,39 @@ export const quickActionItems = [
   },
 ] as const;
 
+export const manageRecordItems = [
+  {
+    label: "學生紀錄",
+    description: "查看、搜尋與編輯學生資料",
+    href: "/students",
+    icon: Users,
+  },
+  {
+    label: "預約紀錄",
+    description: "查看與編輯已建立的預約",
+    href: "/bookings",
+    icon: CalendarDays,
+  },
+  {
+    label: "付款紀錄",
+    description: "查看與編輯已記錄付款資料",
+    href: "/payments",
+    icon: CircleDollarSign,
+  },
+  {
+    label: "支出紀錄",
+    description: "查看與編輯已記錄支出資料",
+    href: "/expenses",
+    icon: ReceiptText,
+  },
+  {
+    label: "AI 匯入紀錄",
+    description: "查看與審核 AI 匯入草稿",
+    href: "/ai-imports",
+    icon: Bot,
+  },
+] as const;
+
 export const courseCategories = [
   { nameZh: "體驗工作坊", nameEn: "Trial Workshop", type: "workshop" },
   { nameZh: "常規課程", nameEn: "Regular Course", type: "regular_course" },

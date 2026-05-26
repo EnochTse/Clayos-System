@@ -56,6 +56,11 @@ export default async function NewBookingPage({ searchParams }: NewBookingPagePro
           <p className="mt-3 text-sm leading-7 text-stone-500">
             這個表單已接上 Supabase，送出後會正式寫入 bookings table。
           </p>
+          <div className="mt-4">
+            <Button asChild className="h-10 rounded-full px-5" variant="outline">
+              <Link href="/bookings">查看已儲存預約並編輯</Link>
+            </Button>
+          </div>
         </div>
 
         {params?.error ? (

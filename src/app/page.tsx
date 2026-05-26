@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   dashboardCards,
   implementationPhases,
+  manageRecordItems,
   navigationItems,
   quickActionItems,
   seedCourse,
@@ -68,6 +69,32 @@ export default function Home() {
                 <p className="mt-3 font-medium">{action.label}</p>
                 <p className="mt-2 text-xs leading-5 text-stone-500">
                   {action.description}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-3xl bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-xl font-semibold">查看與編輯紀錄</h2>
+              <p className="mt-1 text-sm text-stone-500">
+                直接進入各模組已儲存資料列表，逐筆編輯。
+              </p>
+            </div>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {manageRecordItems.map((item) => (
+              <Link
+                className="rounded-2xl border border-stone-200 bg-stone-50 p-4 transition hover:-translate-y-0.5 hover:border-[#4a2f24] hover:bg-white hover:shadow-sm"
+                href={item.href}
+                key={item.href}
+              >
+                <item.icon className="size-5 text-[#4a2f24]" />
+                <p className="mt-3 font-medium">{item.label}</p>
+                <p className="mt-2 text-xs leading-5 text-stone-500">
+                  {item.description}
                 </p>
               </Link>
             ))}

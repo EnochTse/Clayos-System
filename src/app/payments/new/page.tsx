@@ -48,6 +48,11 @@ export default async function NewPaymentPage({ searchParams }: NewPaymentPagePro
         <p className="mt-3 text-sm leading-7 text-stone-500">
           這個表單已接上 Supabase，送出後會正式寫入 payments table。
         </p>
+        <div className="mt-4">
+          <Button asChild className="h-10 rounded-full px-5" variant="outline">
+            <Link href="/payments">查看已儲存付款並編輯</Link>
+          </Button>
+        </div>
 
         {params?.error ? (
           <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">

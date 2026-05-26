@@ -40,6 +40,11 @@ export default async function NewExpensePage({ searchParams }: NewExpensePagePro
         <p className="mt-3 text-sm leading-7 text-stone-500">
           這個表單已接上 Supabase，送出後會正式寫入 expenses table。
         </p>
+        <div className="mt-4">
+          <Button asChild className="h-10 rounded-full px-5" variant="outline">
+            <Link href="/expenses">查看已儲存支出並編輯</Link>
+          </Button>
+        </div>
 
         {params?.error ? (
           <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
