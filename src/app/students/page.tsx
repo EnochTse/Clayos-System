@@ -7,6 +7,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 type StudentsPageProps = {
   searchParams?: Promise<{
     created?: string;
+    updated?: string;
   }>;
 };
 
@@ -50,6 +51,11 @@ export default async function StudentsPage({ searchParams }: StudentsPageProps) 
           學生已成功儲存到 Supabase。
         </div>
       ) : null}
+      {params?.updated ? (
+        <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+          學生資料已更新。
+        </div>
+      ) : null}
 
       {error ? (
         <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
@@ -77,6 +83,12 @@ export default async function StudentsPage({ searchParams }: StudentsPageProps) 
                   <span className="w-fit rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">
                     {student.status}
                   </span>
+                  <Link
+                    className="w-fit rounded-full border border-stone-200 px-3 py-1 text-xs font-medium text-stone-700"
+                    href={`/students/${student.id}/edit`}
+                  >
+                    編輯
+                  </Link>
                 </div>
               </article>
             ))}

@@ -88,3 +88,58 @@ export async function createExpense(formData: FormData) {
 
   redirect("/expenses?created=1");
 }
+
+export async function updateExpense(expenseId: string, formData: FormData) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(`/login?next=/expenses/${expenseId}/edit`);
+  }
+
+  await supabase.rpc("ensure_current_user_profile");
+
+  const expenseDate = String(formData.get("expense_date") ?? "").trim();
+  const category = String(formData.get("category") ?? "other").trim();
+  const item = String(formData.get("item") ?? "").trim();
+  const amount = Number(formData.get("amount_hkd") ?? 0);
+  const method = optionalValue(formData, "method");
+
+  if (!expenseDate) {
+    redirect(`/expenses/${expenseId}/edit?error=請輸入支出日期`);
+  }
+  if (!expenseCategories.has(category)) {
+    redirect(`/expenses/${expenseId}/edit?error=支出分類不正確`);
+  }
+  if (!item) {
+    redirect(`/expenses/${expenseId}/edit?error=請輸入項目或描述`);
+  }
+  if (!Number.isFinite(amount) || amount < 0) {
+    redirect(`/expenses/${expenseId}/edit?error=支出金額不正確`);
+  }
+  if (method && !paymentMethods.has(method)) {
+    redirect(`/expenses/${expenseId}/edit?error=付款方式不正確`);
+  }
+
+  const { error } = await supabase
+    .from("expenses")
+    .update({
+      expense_date: expenseDate,
+      category,
+      vendor: optionalValue(formData, "vendor"),
+      item,
+      amount_hkd: amount,
+      method,
+      notes: optionalValue(formData, "notes"),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", expenseId);
+
+  if (error) {
+    redirect(`/expenses/${expenseId}/edit?error=${encodeURIComponent(error.message)}`);
+  }
+
+  redirect("/expenses?updated=1");
+}

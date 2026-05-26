@@ -68,3 +68,53 @@ export async function createStudent(formData: FormData) {
 
   redirect("/students?created=1");
 }
+
+export async function updateStudent(studentId: string, formData: FormData) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(`/login?next=/students/${studentId}/edit`);
+  }
+
+  await supabase.rpc("ensure_current_user_profile");
+
+  const displayName = String(formData.get("display_name") ?? "").trim();
+  const sourceChannel = optionalValue(formData, "source_channel");
+  const status = String(formData.get("status") ?? "lead").trim();
+
+  if (!displayName) {
+    redirect(`/students/${studentId}/edit?error=請輸入學生顯示名稱`);
+  }
+
+  if (sourceChannel && !contactChannels.has(sourceChannel)) {
+    redirect(`/students/${studentId}/edit?error=來源渠道不正確`);
+  }
+
+  if (!studentStatuses.has(status)) {
+    redirect(`/students/${studentId}/edit?error=學生狀態不正確`);
+  }
+
+  const { error } = await supabase
+    .from("students")
+    .update({
+      display_name: displayName,
+      phone: optionalValue(formData, "phone"),
+      whatsapp_number: optionalValue(formData, "whatsapp_number"),
+      instagram_handle: optionalValue(formData, "instagram_handle"),
+      email: optionalValue(formData, "email"),
+      source_channel: sourceChannel,
+      status,
+      notes: optionalValue(formData, "notes"),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", studentId);
+
+  if (error) {
+    redirect(`/students/${studentId}/edit?error=${encodeURIComponent(error.message)}`);
+  }
+
+  redirect("/students?updated=1");
+}

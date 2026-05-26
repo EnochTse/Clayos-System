@@ -7,6 +7,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 type PaymentsPageProps = {
   searchParams?: Promise<{
     created?: string;
+    updated?: string;
   }>;
 };
 
@@ -66,6 +67,11 @@ export default async function PaymentsPage({ searchParams }: PaymentsPageProps) 
           付款已成功儲存到 Supabase。
         </div>
       ) : null}
+      {params?.updated ? (
+        <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+          付款資料已更新。
+        </div>
+      ) : null}
 
       {error ? (
         <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
@@ -95,6 +101,12 @@ export default async function PaymentsPage({ searchParams }: PaymentsPageProps) 
                   <span className="w-fit rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">
                     {payment.status}
                   </span>
+                  <Link
+                    className="w-fit rounded-full border border-stone-200 px-3 py-1 text-xs font-medium text-stone-700"
+                    href={`/payments/${payment.id}/edit`}
+                  >
+                    編輯
+                  </Link>
                 </div>
               </article>
             ))}
