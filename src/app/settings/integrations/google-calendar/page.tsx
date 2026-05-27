@@ -68,6 +68,14 @@ export default async function GoogleCalendarSettingsPage({
   const googleCalendarWebUrl = buildGoogleCalendarWebUrl(
     integration?.calendar_id ?? "primary",
   );
+  const hasGoogleClientId = Boolean(process.env.GOOGLE_CLIENT_ID?.trim());
+  const hasGoogleClientSecret = Boolean(process.env.GOOGLE_CLIENT_SECRET?.trim());
+  const configuredRedirectUri =
+    process.env.GOOGLE_REDIRECT_URI?.trim() ||
+    (process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/+$/, "")
+      ? `${process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/+$/, "")}/api/google/oauth/callback`
+      : "");
+  const oauthSetupComplete = hasGoogleClientId && hasGoogleClientSecret;
 
   return (
     <div className="space-y-5">
@@ -104,6 +112,18 @@ export default async function GoogleCalendarSettingsPage({
           </div>
         ) : null}
 
+        {!oauthSetupComplete ? (
+          <div className="studio-alert studio-alert-warning mt-5 space-y-2">
+            <p className="font-semibold">
+              尚未完成 Google OAuth 環境設定，所以「連接 Google 帳號」會失敗。
+            </p>
+            <p className="text-xs">
+              請在 Netlify 設定 `GOOGLE_CLIENT_ID`、`GOOGLE_CLIENT_SECRET`，
+              並重新部署。
+            </p>
+          </div>
+        ) : null}
+
         <div className="studio-card-muted mt-5 p-4 text-sm text-[var(--color-ink)]">
           狀態：{isConnected ? "已連線" : "未連線"}
           {integration?.token_expiry ? (
@@ -111,6 +131,24 @@ export default async function GoogleCalendarSettingsPage({
               token 到期：{new Date(integration.token_expiry).toLocaleString("zh-HK")}
             </span>
           ) : null}
+        </div>
+
+        <div className="studio-card-muted mt-4 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[var(--color-subtle-gray)]">
+            OAuth Setup Check
+          </p>
+          <div className="mt-3 grid gap-2 text-sm">
+            <p>
+              GOOGLE_CLIENT_ID：{hasGoogleClientId ? "已設定" : "未設定"}
+            </p>
+            <p>
+              GOOGLE_CLIENT_SECRET：{hasGoogleClientSecret ? "已設定" : "未設定"}
+            </p>
+            <p className="break-all text-xs text-[var(--color-muted-gray)]">
+              Redirect URI（在 Google Cloud Console 授權網址要一致）：
+              {configuredRedirectUri || "未能推導，請設定 NEXT_PUBLIC_APP_URL 或 GOOGLE_REDIRECT_URI"}
+            </p>
+          </div>
         </div>
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">

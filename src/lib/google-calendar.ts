@@ -40,9 +40,30 @@ function requiredEnv(name: string) {
   return value;
 }
 
+function resolveGoogleRedirectUri() {
+  const explicit = process.env.GOOGLE_REDIRECT_URI?.trim();
+  if (explicit) {
+    return explicit;
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim().replace(/\/+$/, "");
+  if (appUrl) {
+    return `${appUrl}/api/google/oauth/callback`;
+  }
+
+  const netlifyUrl = process.env.URL?.trim().replace(/\/+$/, "");
+  if (netlifyUrl) {
+    return `${netlifyUrl}/api/google/oauth/callback`;
+  }
+
+  throw new Error(
+    "Missing GOOGLE_REDIRECT_URI and NEXT_PUBLIC_APP_URL. Please configure one of them in environment variables.",
+  );
+}
+
 export function buildGoogleOAuthUrl() {
   const clientId = requiredEnv("GOOGLE_CLIENT_ID");
-  const redirectUri = requiredEnv("GOOGLE_REDIRECT_URI");
+  const redirectUri = resolveGoogleRedirectUri();
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -62,7 +83,7 @@ export function buildGoogleOAuthUrl() {
 export async function exchangeCodeForGoogleTokens(code: string) {
   const clientId = requiredEnv("GOOGLE_CLIENT_ID");
   const clientSecret = requiredEnv("GOOGLE_CLIENT_SECRET");
-  const redirectUri = requiredEnv("GOOGLE_REDIRECT_URI");
+  const redirectUri = resolveGoogleRedirectUri();
 
   const body = new URLSearchParams({
     code,

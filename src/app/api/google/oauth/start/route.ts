@@ -36,5 +36,13 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  return NextResponse.redirect(buildGoogleOAuthUrl());
+  try {
+    return NextResponse.redirect(buildGoogleOAuthUrl());
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Google OAuth URL 建立失敗";
+    return NextResponse.redirect(
+      `${appUrl(request)}/settings/integrations/google-calendar?error=${encodeURIComponent(message)}`,
+    );
+  }
 }
