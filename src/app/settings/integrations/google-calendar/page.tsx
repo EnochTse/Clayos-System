@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ArrowUpRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { buildGoogleCalendarWebUrl } from "@/lib/google-calendar";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import {
@@ -63,6 +65,9 @@ export default async function GoogleCalendarSettingsPage({
   const isConnected =
     Boolean(integration?.active) &&
     Boolean(integration?.encrypted_access_token);
+  const googleCalendarWebUrl = buildGoogleCalendarWebUrl(
+    integration?.calendar_id ?? "primary",
+  );
 
   return (
     <div className="space-y-5">
@@ -112,6 +117,14 @@ export default async function GoogleCalendarSettingsPage({
           <Button asChild className="h-9 rounded-[10px] px-4 text-[13px]">
             <a href="/api/google/oauth/start">連接 Google 帳號</a>
           </Button>
+          {isConnected ? (
+            <Button asChild className="h-9 rounded-[10px] px-4 text-[13px]" variant="outline">
+              <a href={googleCalendarWebUrl} rel="noreferrer" target="_blank">
+                開啟 Google Calendar
+                <ArrowUpRight className="size-3.5" />
+              </a>
+            </Button>
+          ) : null}
           <form action={disconnectGoogleCalendar}>
             <Button className="h-9 rounded-[10px] px-4 text-[13px]" type="submit" variant="outline">
               中斷連線

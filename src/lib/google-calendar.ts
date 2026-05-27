@@ -20,6 +20,18 @@ type GoogleCalendarEvent = {
   status?: "confirmed" | "cancelled";
 };
 
+export function buildGoogleCalendarWebUrl(
+  calendarId?: string | null,
+): string {
+  const normalized = calendarId?.trim();
+
+  if (!normalized || normalized === "primary") {
+    return "https://calendar.google.com/calendar/u/0/r";
+  }
+
+  return `https://calendar.google.com/calendar/u/0/r?cid=${encodeURIComponent(normalized)}`;
+}
+
 function requiredEnv(name: string) {
   const value = process.env[name]?.trim();
   if (!value) {

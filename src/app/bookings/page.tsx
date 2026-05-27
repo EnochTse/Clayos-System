@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ArrowUpRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -45,7 +46,7 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
   const { data: bookings, error: bookingsError } = await supabase
     .from("bookings")
     .select(
-      "id, student_id, course_id, start_at, end_at, status, credits_to_deduct, notes",
+      "id, student_id, course_id, start_at, end_at, status, credits_to_deduct, notes, google_calendar_link",
     )
     .order("start_at", { ascending: false });
 
@@ -133,6 +134,14 @@ export default async function BookingsPage({ searchParams }: BookingsPageProps) 
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="studio-badge">{booking.status}</span>
                     <span className="studio-badge">扣堂 {booking.credits_to_deduct}</span>
+                    {booking.google_calendar_link ? (
+                      <Button asChild className="h-8 rounded-[10px] px-3 text-xs" size="sm" variant="outline">
+                        <a href={booking.google_calendar_link} rel="noreferrer" target="_blank">
+                          Google Calendar
+                          <ArrowUpRight className="size-3.5" />
+                        </a>
+                      </Button>
+                    ) : null}
                     <Button asChild className="h-8 rounded-[10px] px-3 text-xs" size="sm" variant="outline">
                       <Link href={`/bookings/${booking.id}/edit`}>編輯</Link>
                     </Button>

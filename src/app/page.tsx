@@ -1,17 +1,43 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ArrowUpRight } from "lucide-react";
 
 import { AuthStatus } from "@/components/auth/auth-status";
 import { Button } from "@/components/ui/button";
+import { buildGoogleCalendarWebUrl } from "@/lib/google-calendar";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { cn } from "@/lib/utils";
 import {
   dashboardBoardColumns,
   dashboardCards,
-  implementationPhases,
   manageRecordItems,
   quickActionItems,
-  seedCourse,
 } from "@/lib/constants";
+
+type CalendarBookingRow = {
+  id: string;
+  student_id: string;
+  start_at: string;
+  end_at: string;
+  status: string;
+  google_calendar_link: string | null;
+};
+
+type StudentLookup = {
+  id: string;
+  display_name: string;
+};
+
+type CalendarItem = {
+  id: string;
+  studentName: string;
+  startAt: string;
+  status: string;
+  href: string;
+  external: boolean;
+};
+
+const weekDayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
 
 function startOfDay(date = new Date()) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -27,6 +53,81 @@ function addDays(date: Date, days: number) {
 
 function addMonths(date: Date, months: number) {
   return new Date(date.getFullYear(), date.getMonth() + months, 1);
+}
+
+function buildMonthGrid(referenceDate: Date) {
+  const monthStart = startOfMonth(referenceDate);
+  const offset = (monthStart.getDay() + 6) % 7;
+  const gridStart = addDays(monthStart, -offset);
+  return Array.from({ length: 42 }, (_, index) => addDays(gridStart, index));
+}
+
+function isSameMonth(date: Date, monthReference: Date) {
+  return (
+    date.getFullYear() === monthReference.getFullYear() &&
+    date.getMonth() === monthReference.getMonth()
+  );
+}
+
+function toDateKey(value: Date | string) {
+  const date = value instanceof Date ? value : new Date(value);
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Hong_Kong",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+function formatMonthTitle(value: Date) {
+  return new Intl.DateTimeFormat("zh-HK", {
+    timeZone: "Asia/Hong_Kong",
+    year: "numeric",
+    month: "long",
+  }).format(value);
+}
+
+function formatTime(value: string) {
+  return new Intl.DateTimeFormat("zh-HK", {
+    timeZone: "Asia/Hong_Kong",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date(value));
+}
+
+function formatStatus(status: string) {
+  switch (status) {
+    case "confirmed":
+      return "已確認";
+    case "pending_payment":
+      return "待付款";
+    case "completed":
+      return "已完成";
+    case "cancelled":
+      return "已取消";
+    case "rescheduled":
+      return "已改期";
+    case "no_show":
+      return "缺席";
+    default:
+      return "草稿";
+  }
+}
+
+function calendarItemTone(status: string) {
+  switch (status) {
+    case "confirmed":
+      return "border-[#d8e5d7] bg-[#f4faf4] text-[#24472d]";
+    case "pending_payment":
+      return "border-[#eddcb8] bg-[#fffaf0] text-[#5e4e23]";
+    case "completed":
+      return "border-[#d6e5f0] bg-[#f5f9ff] text-[#214466]";
+    case "cancelled":
+      return "border-[#ececec] bg-[#f7f7f7] text-[#6a6a6a]";
+    default:
+      return "border-[var(--color-fog)] bg-white text-[var(--color-cool-gray)]";
+  }
 }
 
 function formatCurrency(value: number) {
@@ -53,6 +154,9 @@ export default async function Home() {
   const tomorrowStart = addDays(todayStart, 1);
   const monthStart = startOfMonth(now);
   const nextMonthStart = addMonths(monthStart, 1);
+  const calendarDays = buildMonthGrid(monthStart);
+  const calendarRangeStart = calendarDays[0];
+  const calendarRangeEnd = addDays(calendarDays[calendarDays.length - 1], 1);
 
   const [
     { count: bookingsToday },
@@ -61,6 +165,8 @@ export default async function Home() {
     { count: pendingPayments },
     { count: pendingAiImports },
     { data: monthExpensesRows },
+    { data: calendarBookingsRows },
+    { data: integration },
   ] = await Promise.all([
     supabase
       .from("bookings")
@@ -82,13 +188,65 @@ export default async function Home() {
     supabase
       .from("ai_imports")
       .select("id", { count: "exact", head: true })
-      .eq("status", "pending_review"),
+      .eq("status", "needs_review"),
     supabase
       .from("expenses")
       .select("amount_hkd")
       .gte("expense_date", monthStart.toISOString().slice(0, 10))
       .lt("expense_date", nextMonthStart.toISOString().slice(0, 10)),
+    supabase
+      .from("bookings")
+      .select("id, student_id, start_at, end_at, status, google_calendar_link")
+      .gte("start_at", calendarRangeStart.toISOString())
+      .lt("start_at", calendarRangeEnd.toISOString())
+      .order("start_at", { ascending: true }),
+    supabase
+      .from("google_integrations")
+      .select("calendar_id, active, encrypted_access_token")
+      .eq("owner_id", user.id)
+      .maybeSingle(),
   ]);
+
+  const bookingStudentIds = Array.from(
+    new Set((calendarBookingsRows ?? []).map((booking) => booking.student_id).filter(Boolean)),
+  );
+
+  const { data: bookingStudents } =
+    bookingStudentIds.length > 0
+      ? await supabase
+          .from("students")
+          .select("id, display_name")
+          .in("id", bookingStudentIds)
+      : { data: [] as StudentLookup[] };
+
+  const studentNameById = new Map(
+    (bookingStudents ?? []).map((student) => [student.id, student.display_name]),
+  );
+
+  const calendarItemsByDate = new Map<string, CalendarItem[]>();
+  for (const booking of (calendarBookingsRows ?? []) as CalendarBookingRow[]) {
+    const dateKey = toDateKey(booking.start_at);
+    const items = calendarItemsByDate.get(dateKey) ?? [];
+    items.push({
+      id: booking.id,
+      studentName: studentNameById.get(booking.student_id) ?? "未命名學生",
+      startAt: booking.start_at,
+      status: booking.status,
+      href: booking.google_calendar_link ?? `/bookings/${booking.id}/edit`,
+      external: Boolean(booking.google_calendar_link),
+    });
+    calendarItemsByDate.set(dateKey, items);
+  }
+  for (const items of calendarItemsByDate.values()) {
+    items.sort((a, b) => a.startAt.localeCompare(b.startAt));
+  }
+
+  const googleCalendarWebUrl = buildGoogleCalendarWebUrl(
+    integration?.calendar_id ?? "primary",
+  );
+  const isGoogleConnected =
+    Boolean(integration?.active) && Boolean(integration?.encrypted_access_token);
+  const todayKey = toDateKey(now);
 
   const monthExpensesAmount = (monthExpensesRows ?? []).reduce(
     (sum, row) => sum + Number(row.amount_hkd ?? 0),
@@ -120,6 +278,161 @@ export default async function Home() {
           <div className="w-full max-w-sm">
             <AuthStatus />
           </div>
+        </div>
+      </section>
+
+      <section className="studio-card p-5 sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="studio-kicker">Appointments Calendar</p>
+            <h2 className="mt-2 text-[30px] font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
+              {formatMonthTitle(monthStart)}
+            </h2>
+            <p className="mt-2 text-sm text-[var(--color-muted-gray)]">
+              月曆直接顯示預約，點選項目可編輯或跳轉到 Google Calendar。
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {isGoogleConnected ? (
+              <Button asChild className="h-9 rounded-[10px] px-4 text-[13px]" variant="outline">
+                <a href={googleCalendarWebUrl} rel="noreferrer" target="_blank">
+                  開啟 Google Calendar
+                  <ArrowUpRight className="size-3.5" />
+                </a>
+              </Button>
+            ) : (
+              <Button asChild className="h-9 rounded-[10px] px-4 text-[13px]" variant="outline">
+                <Link href="/settings/integrations/google-calendar">
+                  連接 Google Calendar
+                </Link>
+              </Button>
+            )}
+            <Button asChild className="h-9 rounded-[10px] px-4 text-[13px]">
+              <Link href="/bookings/new">新增預約</Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-5 overflow-x-auto">
+          <div className="min-w-[900px]">
+            <div className="grid grid-cols-7 gap-2">
+              {weekDayLabels.map((label) => (
+                <div
+                  className="rounded-[10px] border border-[var(--color-fog)] bg-[var(--surface-canvas-white)] px-2 py-2 text-center text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--color-muted-gray)]"
+                  key={label}
+                >
+                  {label}
+                </div>
+              ))}
+            </div>
+            <div className="mt-2 grid grid-cols-7 gap-2">
+              {calendarDays.map((day) => {
+                const dayKey = toDateKey(day);
+                const dayItems = calendarItemsByDate.get(dayKey) ?? [];
+                const currentMonth = isSameMonth(day, monthStart);
+                const isToday = dayKey === todayKey;
+                const visibleItems = dayItems.slice(0, 4);
+
+                return (
+                  <div
+                    className={cn(
+                      "min-h-[162px] rounded-[12px] border p-2.5",
+                      currentMonth
+                        ? "border-[var(--color-fog)] bg-white"
+                        : "border-[var(--color-fog)] bg-[var(--surface-canvas-white)]",
+                      isToday && "border-[var(--color-border-silver)]",
+                    )}
+                    key={dayKey}
+                  >
+                    <div className="flex items-center justify-between">
+                      <p
+                        className={cn(
+                          "text-xs font-semibold",
+                          currentMonth
+                            ? "text-[var(--color-ink)]"
+                            : "text-[var(--color-subtle-gray)]",
+                        )}
+                      >
+                        {day.getDate()}
+                      </p>
+                      {dayItems.length > 0 ? (
+                        <span className="text-[10px] text-[var(--color-subtle-gray)]">
+                          {dayItems.length} 筆
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <div className="mt-2 space-y-1.5">
+                      {visibleItems.map((item) =>
+                        item.external ? (
+                          <a
+                            className={cn(
+                              "flex items-start justify-between gap-2 rounded-[8px] border px-2 py-1.5 text-[11px] transition hover:brightness-[0.98]",
+                              calendarItemTone(item.status),
+                            )}
+                            href={item.href}
+                            key={item.id}
+                            rel="noreferrer"
+                            target="_blank"
+                          >
+                            <span className="min-w-0">
+                              <span className="block truncate font-semibold">
+                                {formatTime(item.startAt)} {item.studentName}
+                              </span>
+                              <span className="block truncate text-[10px] opacity-90">
+                                {formatStatus(item.status)}
+                              </span>
+                            </span>
+                            <ArrowUpRight className="mt-0.5 size-3.5 shrink-0" />
+                          </a>
+                        ) : (
+                          <Link
+                            className={cn(
+                              "block rounded-[8px] border px-2 py-1.5 text-[11px] transition hover:brightness-[0.98]",
+                              calendarItemTone(item.status),
+                            )}
+                            href={item.href}
+                            key={item.id}
+                          >
+                            <span className="block truncate font-semibold">
+                              {formatTime(item.startAt)} {item.studentName}
+                            </span>
+                            <span className="block truncate text-[10px] opacity-90">
+                              {formatStatus(item.status)}
+                            </span>
+                          </Link>
+                        ),
+                      )}
+
+                      {dayItems.length > visibleItems.length ? (
+                        <p className="text-[10px] text-[var(--color-subtle-gray)]">
+                          +{dayItems.length - visibleItems.length} more
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-[var(--color-ink)]">Key Metrics</h2>
+          <p className="text-xs text-[var(--color-subtle-gray)]">Supabase 即時統計</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {dashboardCards.map((card) => (
+            <article className="studio-card p-4" key={card.label}>
+              <p className="text-[13px] text-[var(--color-muted-gray)]">{card.label}</p>
+              <p className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
+                {metricMap[card.value]}
+              </p>
+              <p className="mt-1 text-xs text-[var(--color-subtle-gray)]">{card.helper}</p>
+            </article>
+          ))}
         </div>
       </section>
 
@@ -175,26 +488,8 @@ export default async function Home() {
         </div>
       </section>
 
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-[var(--color-ink)]">Key Metrics</h2>
-          <p className="text-xs text-[var(--color-subtle-gray)]">Supabase 即時統計</p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {dashboardCards.map((card) => (
-            <article className="studio-card p-4" key={card.label}>
-              <p className="text-[13px] text-[var(--color-muted-gray)]">{card.label}</p>
-              <p className="mt-2 text-2xl font-semibold tracking-[-0.02em] text-[var(--color-ink)]">
-                {metricMap[card.value]}
-              </p>
-              <p className="mt-1 text-xs text-[var(--color-subtle-gray)]">{card.helper}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <section className="studio-card p-4 sm:p-5">
+      <section className="studio-card p-4 sm:p-5">
+        <section>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-[var(--color-ink)]">Quick Create</h2>
             <Button asChild className="h-9 rounded-[10px] px-3 text-[13px]">
@@ -237,33 +532,6 @@ export default async function Home() {
                 </p>
               </Link>
             ))}
-          </div>
-        </section>
-
-        <section className="studio-card p-4 sm:p-5">
-          <h2 className="text-lg font-semibold text-[var(--color-ink)]">Roadmap</h2>
-          <div className="mt-4 grid gap-3">
-            {implementationPhases.map((phase, index) => (
-              <div className="flex items-start gap-3" key={phase}>
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[var(--color-fog)] bg-[var(--surface-canvas-white)] text-[11px] font-semibold text-[var(--color-muted-gray)]">
-                  {index + 1}
-                </span>
-                <p className="text-sm leading-6 text-[var(--color-muted-gray)]">
-                  {phase}
-                </p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-5 studio-card-muted p-4">
-            <p className="text-sm font-semibold text-[var(--color-ink)]">
-              {seedCourse.name_zh}
-            </p>
-            <p className="mt-1 text-xs text-[var(--color-muted-gray)]">
-              {seedCourse.name_en}
-            </p>
-            <p className="mt-3 text-sm leading-6 text-[var(--color-muted-gray)]">
-              {seedCourse.description_zh}
-            </p>
           </div>
         </section>
       </section>
